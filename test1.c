@@ -1,73 +1,64 @@
-// TRINH HUY DAI - B25DTCN151
-// PROJECT QUAN LY KHACH SAN
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-#include <stdio.h>      // printf, scanf, fgets
-#include <string.h>     // strlen, strcmp, strcpy, sprintf
-#include <stdlib.h>     // system
+#define MAX_ROOMS 100
+#define MAX_BOOKINGS 500
 
-// ----------------- HANG SO -----------------
-#define MAX_ROOMS 100       // so phong toi da
-#define MAX_BOOKINGS 500    // so giao dich toi da
-
-// ----------------- CAU TRUC DU LIEU -----------------
-
-// Cau truc luu thong tin phong
 struct Room {
-    char roomId[5];     // ma phong (toi da 4 ky tu + 1 ky tu ket thuc)
-    int type;           // loai phong: 1 = don, 2 = doi
-    double price;       // gia phong 1 dem
-    int status;         // trang thai: 0 trong, 1 dang o, 2 bao tri
+    char roomId[5];
+    int type;
+    double price;
+    int status;
 };
 
-// Cau truc luu thong tin 1 lan dat phong
 struct Booking {
-    char bookId[20];        // ma dat phong (VD: B001, B002)
-    char roomId[5];         // phong nao duoc thue
-    char customerName[50];  // ten khach hang
-    int days;               // so ngay o
-    double totalCost;       // tong tien = price * days
+    char bookId[20];
+    char roomId[5];
+    char customerName[50];
+    int days;
+    double totalCost;
 };
 
-// ----------------- MANG TOAN CUC -----------------
+struct Room rooms[MAX_ROOMS];
+int roomCount = 0;
 
-struct Room rooms[MAX_ROOMS];          // mang luu danh sach phong
-int roomCount = 0;                     // so phong hien co
+struct Booking bookings[MAX_BOOKINGS];
+int bookingCount = 0;
 
-struct Booking bookings[MAX_BOOKINGS]; // mang luu lich su dat phong
-int bookingCount = 0;                  // so giao dich hien co
-
-// ----------------- HAM TIEN ICH NHO -----------------
-
-// ham xoa man hinh
 void clearScreen() {
     system("cls");
 }
 
-// ham xoa ky tu '\n' con lai trong buffer sau khi dung scanf
 void clearBuffer() {
     int c;
-    while ((c = getchar()) != '\n' && c != EOF) {
-        // chi doc va bo qua
-    }
+    while ((c = getchar()) != '\n' && c != EOF) {}
 }
 
-// ham can giua chuoi trong 1 cot co do rong 'width'
+int isAllSpaces(const char *s) {
+    for (int i = 0; s[i] != '\0'; i++) {
+        if (s[i] != ' ' && s[i] != '\t') {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 void printCenter(const char *text, int width) {
-    int len = strlen(text);        // do dai chuoi
-    if (len >= width) {            // neu dai hon cot thi in thang
+    int len = strlen(text);
+    if (len >= width) {
         printf("%s", text);
         return;
     }
 
-    int left = (width - len) / 2;  // so space ben trai
-    int right = width - len - left;// so space ben phai
+    int left = (width - len) / 2;
+    int right = width - len - left;
 
     for (int i = 0; i < left; i++) printf(" ");
     printf("%s", text);
     for (int i = 0; i < right; i++) printf(" ");
 }
 
-// in tieu de bang phong
 void printRoomTitle() {
     printCenter("SO PHONG", 12);   printf("|");
     printCenter("LOAI", 8);        printf("|");
@@ -76,7 +67,13 @@ void printRoomTitle() {
     printf("--------------------------------------------------------------\n");
 }
 
-// ----------------- HAM HIEN MENU -----------------
+void printBookingTitle() {
+    printCenter("MA DAT", 10);       printf("|");
+    printCenter("TEN KHACH", 25);    printf("|");
+    printCenter("SO NGAY", 10);      printf("|");
+    printCenter("TONG TIEN", 15);    printf("\n");
+    printf("---------------------------------------------------------------------\n");
+}
 
 void displayMenu() {
     printf("\n========================= MENU QUAN LY PHONG ==========================\n");
@@ -89,33 +86,39 @@ void displayMenu() {
     printf("||               F07  CHECK-IN (GIAO DICH NHAN PHONG)                ||\n");
     printf("||               F08  LICH SU THUE                                   ||\n");
     printf("||               F09  THOAT                                          ||\n");
-    printf("=======================================================================\n\n");
+    printf("=======================================================================\n");
     printf("NHAP LUA CHON (1-9): ");
 }
 
-// ----------------- F01 - THEM PHONG MOI -----------------
-
 void addRoom() {
-    struct Room newRoom;       // bien phong moi
+    struct Room newRoom;
 
     clearScreen();
     printf("=========== THEM PHONG MOI ===========\n");
 
-    // ------- NHAP SO PHONG -------
     while (1) {
         printf("Nhap so phong (3-4 ky tu): ");
-        fgets(newRoom.roomId, sizeof(newRoom.roomId), stdin);           // nhap chuoi
-        newRoom.roomId[strcspn(newRoom.roomId, "\n")] = '\0';           // xoa '\n'
+        if (fgets(newRoom.roomId, sizeof(newRoom.roomId), stdin) == NULL) {
+            printf("Loi nhap! Moi nhap lai.\n");
+            continue;
+        }
+        newRoom.roomId[strcspn(newRoom.roomId, "\n")] = '\0';
 
-        int len = strlen(newRoom.roomId);                               // do dai ma phong
+        int len = strlen(newRoom.roomId);
 
-        if (len < 3 || len > 4) {                                       // kiem tra do dai
+        if (len == 0 || isAllSpaces(newRoom.roomId)) {
             clearScreen();
-            printf("So phong phai tu 3 den 4 ky tu!\n");
-            continue;                                                   // nhap lai
+            printf("So phong khong duoc de trong hoac chi la khoang trang!\n");
+            continue;
         }
 
-        int duplicate = 0;                                              // kiem tra trung phong
+        if (len < 3 || len > 4) {
+            clearScreen();
+            printf("So phong phai tu 3 den 4 ky tu!\n");
+            continue;
+        }
+
+        int duplicate = 0;
         for (int i = 0; i < roomCount; i++) {
             if (strcmp(rooms[i].roomId, newRoom.roomId) == 0) {
                 duplicate = 1;
@@ -127,19 +130,18 @@ void addRoom() {
             clearScreen();
             printf("So phong da ton tai, vui long nhap so khac!\n");
         } else {
-            break;                                                      // hop le
+            break;
         }
     }
 
-    // ------- NHAP LOAI PHONG -------
     while (1) {
         printf("Nhap loai phong (1 Don, 2 Doi): ");
-        if (scanf("%d", &newRoom.type) != 1) {                          // neu nhap sai kieu
+        if (scanf("%d", &newRoom.type) != 1) {
             clearBuffer();
             printf("Nhap sai kieu du lieu!\n");
             continue;
         }
-        clearBuffer();                                                  // xoa '\n'
+        clearBuffer();
 
         if (newRoom.type != 1 && newRoom.type != 2) {
             printf("Loai phong chi duoc nhap 1 hoac 2!\n");
@@ -148,10 +150,9 @@ void addRoom() {
         }
     }
 
-    // ------- NHAP GIA PHONG -------
     while (1) {
         printf("Nhap gia phong (>0): ");
-        if (scanf("%lf", &newRoom.price) != 1) {                        // kieu double
+        if (scanf("%lf", &newRoom.price) != 1) {
             clearBuffer();
             printf("Nhap sai kieu du lieu!\n");
             continue;
@@ -165,29 +166,38 @@ void addRoom() {
         }
     }
 
-    newRoom.status = 0;                                                 // mac dinh phong trong
+    newRoom.status = 0;
 
-    rooms[roomCount++] = newRoom;                                       // luu vao mang
+    rooms[roomCount++] = newRoom;
 
     clearScreen();
     printf("Them phong thanh cong!\n");
 }
 
-// ----------------- F02 - CAP NHAT PHONG -----------------
-
 void updateRoom() {
-    char id[5];                 // ma phong can cap nhat
-    int index;                  // vi tri phong trong mang
+    char id[5];
+    int index;
 
-    while (1) {                 // vong lap de nhap lai id neu sai
+    while (1) {
         clearScreen();
         printf("=========== CAP NHAT PHONG ===========\n");
 
         printf("Nhap so phong can cap nhat: ");
-        fgets(id, sizeof(id), stdin);
-        id[strcspn(id, "\n")] = '\0';   // xoa ky tu Enter
+        if (fgets(id, sizeof(id), stdin) == NULL) {
+            printf("Loi nhap! Moi nhap lai.\n");
+            continue;
+        }
+        id[strcspn(id, "\n")] = '\0';
 
-        // tim phong trong mang rooms[]
+        if (id[0] == '\0' || isAllSpaces(id)) {
+            clearScreen();
+            printf("So phong khong duoc de trong hoac chi la khoang trang!\n");
+            printf("Nhan Enter de nhap lai so phong!!!\n");
+            getchar();
+            clearBuffer();
+            continue;
+        }
+
         index = -1;
         for (int i = 0; i < roomCount; i++) {
             if (strcmp(rooms[i].roomId, id) == 0) {
@@ -196,21 +206,20 @@ void updateRoom() {
             }
         }
 
-        if (index == -1) {  // khong tim thay phong
+        if (index == -1) {
             clearScreen();
             printf("Khong tim thay so phong %s!\n", id);
             printf("Nhan Enter de nhap lai so phong!!!\n");
-            getchar();      // dung man hinh cho nguoi dung doc
-           
+            getchar();
+            clearBuffer();
         } else {
-            break;          // tim thay phong -> thoat vong while
+            break;
         }
     }
 
     int newType;
     double newPrice;
 
-    // ------- CAP NHAT LOAI PHONG -------
     while (1) {
         clearScreen();
         printf("=========== CAP NHAT PHONG ===========\n");
@@ -231,7 +240,6 @@ void updateRoom() {
         }
     }
 
-    // ------- CAP NHAT GIA PHONG -------
     while (1) {
         printf("Nhap gia phong moi (>0): ");
         if (scanf("%lf", &newPrice) != 1) {
@@ -248,14 +256,12 @@ void updateRoom() {
         }
     }
 
-    rooms[index].type  = newType;   // cap nhat loai phong
-    rooms[index].price = newPrice;  // cap nhat gia phong
+    rooms[index].type  = newType;
+    rooms[index].price = newPrice;
 
     clearScreen();
     printf("Cap nhat phong %s thanh cong!\n", id);
 }
-
-// ----------------- F03 - BAO TRI PHONG (KHOA) -----------------
 
 int maintenanceRoom() {
     char id[5];
@@ -263,11 +269,23 @@ int maintenanceRoom() {
     clearScreen();
     printf("=========== BAO TRI PHONG (KHOA) ===========\n");
 
-    printf("Nhap so phong can bao tri: ");
-    fgets(id, sizeof(id), stdin);
-    id[strcspn(id, "\n")] = '\0';
+    while (1) {
+        printf("Nhap so phong can bao tri: ");
+        if (fgets(id, sizeof(id), stdin) == NULL) {
+            printf("Loi nhap! Moi nhap lai.\n");
+            continue;
+        }
+        id[strcspn(id, "\n")] = '\0';
 
-    int index = -1;                     // vi tri phong
+        if (id[0] == '\0' || isAllSpaces(id)) {
+            clearScreen();
+            printf("So phong khong duoc de trong hoac chi la khoang trang!\n");
+            continue;
+        }
+        break;
+    }
+
+    int index = -1;
     for (int i = 0; i < roomCount; i++) {
         if (strcmp(rooms[i].roomId, id) == 0) {
             index = i;
@@ -281,24 +299,22 @@ int maintenanceRoom() {
         return 0;
     }
 
-    if (rooms[index].status == 1) {     // phong dang co khach
+    if (rooms[index].status == 1) {
         clearScreen();
         printf("Phong %s dang co khach, khong the dua vao bao tri!\n", id);
         return 0;
     }
 
-    rooms[index].status = 2;           // dat sang trang thai bao tri
+    rooms[index].status = 2;
 
     clearScreen();
     printf("Phong %s da duoc dua vao trang thai BAO TRI!\n", id);
     return 1;
 }
 
-// ----------------- F04 - HIEN THI DANH SACH (PHAN TRANG) -----------------
-
 void displayRooms() {
-    int perPage = 5;                                    // so phong tren 1 trang
-    int page = 0;                                       // trang hien tai (0-based)
+    int perPage = 5;
+    int page = 0;
     int totalPage;
 
     if (roomCount == 0) {
@@ -307,7 +323,7 @@ void displayRooms() {
         return;
     }
 
-    totalPage = (roomCount + perPage - 1) / perPage;    // tinh so trang
+    totalPage = (roomCount + perPage - 1) / perPage;
 
     while (1) {
         clearScreen();
@@ -315,8 +331,8 @@ void displayRooms() {
                page + 1, totalPage);
         printRoomTitle();
 
-        int start = page * perPage;                     // chi so bat dau
-        int end = start + perPage;                      // chi so ket thuc
+        int start = page * perPage;
+        int end = start + perPage;
         if (end > roomCount) end = roomCount;
 
         for (int i = start; i < end; i++) {
@@ -336,22 +352,24 @@ void displayRooms() {
         }
 
         printf("\nNhap 'n' + Enter: trang tiep | 'p' + Enter: trang truoc | 'q' + Enter: thoat");
-        printf("\nMoi ban lua chon:"); 
+        printf("\nMoi ban lua chon: ");
 
-        char c = getchar();                   // doc 1 ky tu lenh
-        clearBuffer();                        // xoa phan con lai (neu co)
+        char buf[10];
+        if (fgets(buf, sizeof(buf), stdin) == NULL) {
+            printf("Loi nhap!\n");
+            continue;
+        }
+        char c = buf[0];
 
-        if (c == 'n' || c == 'N') {           // sang trang sau
+        if (c == 'n' || c == 'N') {
             if (page < totalPage - 1) page++;
-        } else if (c == 'p' || c == 'P') {    // ve trang truoc
+        } else if (c == 'p' || c == 'P') {
             if (page > 0) page--;
-        } else if (c == 'q' || c == 'Q') {    // thoat
+        } else if (c == 'q' || c == 'Q') {
             break;
         }
     }
 }
-
-// ----------------- F05 - TIM PHONG TRONG THEO LOAI -----------------
 
 void searchEmptyRoomsByType() {
     int type;
@@ -359,7 +377,6 @@ void searchEmptyRoomsByType() {
     clearScreen();
     printf("=========== TIM PHONG TRONG THEO LOAI ===========\n");
 
-    // nhap loai phong
     while (1) {
         printf("Nhap loai phong can tim (1 Don, 2 Doi): ");
         if (scanf("%d", &type) != 1) {
@@ -376,7 +393,7 @@ void searchEmptyRoomsByType() {
         }
     }
 
-    int found = 0;                 // co tim duoc phong nao khong
+    int found = 0;
 
     clearScreen();
     printf("======== DANH SACH PHONG TRONG LOAI %s ========\n",
@@ -384,7 +401,7 @@ void searchEmptyRoomsByType() {
     printRoomTitle();
 
     for (int i = 0; i < roomCount; i++) {
-        if (rooms[i].type == type && rooms[i].status == 0) {   // dung loai va dang trong
+        if (rooms[i].type == type && rooms[i].status == 0) {
             char typeStr[10], priceStr[20], statusStr[20];
 
             strcpy(typeStr, (rooms[i].type == 1) ? "DON" : "DOI");
@@ -409,8 +426,6 @@ void searchEmptyRoomsByType() {
     getchar();
 }
 
-// ----------------- F06 - SAP XEP PHONG THEO GIA GIAM DAN -----------------
-
 void sortRoomsByPriceDesc() {
     if (roomCount <= 1) {
         clearScreen();
@@ -418,10 +433,9 @@ void sortRoomsByPriceDesc() {
         return;
     }
 
-    // bubble sort don gian
     for (int i = 0; i < roomCount - 1; i++) {
         for (int j = i + 1; j < roomCount; j++) {
-            if (rooms[i].price < rooms[j].price) {   // neu phong i co gia nho hon phong j thi doi cho
+            if (rooms[i].price < rooms[j].price) {
                 struct Room temp = rooms[i];
                 rooms[i] = rooms[j];
                 rooms[j] = temp;
@@ -434,10 +448,8 @@ void sortRoomsByPriceDesc() {
     printf("Nhan Enter de xem danh sach sau khi sap xep...\n");
     getchar();
 
-    displayRooms();    // goi lai ham hien thi de kiem tra ket qua
+    displayRooms();
 }
-
-// ----------------- F07 - CHECK-IN (GIAO DICH NHAN PHONG) -----------------
 
 void checkIn() {
     char id[5];
@@ -447,26 +459,36 @@ void checkIn() {
     clearScreen();
     printf("=========== CHECK-IN (NHAN PHONG) ===========\n");
 
-    // nhap so phong can check in
-    printf("Nhap so phong muon nhan: ");
-    fgets(id, sizeof(id), stdin);
-    id[strcspn(id, "\n")] = '\0';
-
-    int index = -1;
-    for (int i = 0; i < roomCount; i++) {
-        if (strcmp(rooms[i].roomId, id) == 0) {
-            index = i;
-            break;
+    int index;
+    while (1) {
+        printf("Nhap so phong muon nhan: ");
+        if (fgets(id, sizeof(id), stdin) == NULL) {
+            printf("Loi nhap! Moi nhap lai.\n");
+            continue;
         }
+        id[strcspn(id, "\n")] = '\0';
+
+        if (id[0] == '\0' || isAllSpaces(id)) {
+            printf("So phong khong duoc de trong hoac chi la khoang trang! Moi nhap lai.\n");
+            continue;
+        }
+
+        index = -1;
+        for (int i = 0; i < roomCount; i++) {
+            if (strcmp(rooms[i].roomId, id) == 0) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            printf("Khong tim thay so phong %s! Moi nhap lai.\n", id);
+            continue;
+        }
+
+        break;
     }
 
-    if (index == -1) {
-        clearScreen();
-        printf("Khong tim thay so phong %s!\n", id);
-        return;
-    }
-
-    // kiem tra trang thai phong
     if (rooms[index].status == 1) {
         clearScreen();
         printf("Phong %s dang co khach, khong the nhan them!\n", id);
@@ -478,20 +500,45 @@ void checkIn() {
         return;
     }
 
-    // nhap ten khach
-    printf("Nhap ten khach hang: ");
-    fgets(name, sizeof(name), stdin);
-    name[strcspn(name, "\n")] = '\0';
-
-    // nhap so ngay o
     while (1) {
-        printf("Nhap so ngay o: ");
-        if (scanf("%d", &days) != 1) {
-            clearBuffer();
-            printf("Nhap sai kieu du lieu!\n");
+        printf("Nhap ten khach hang: ");
+        if (fgets(name, sizeof(name), stdin) == NULL) {
+            printf("Loi nhap! Moi nhap lai.\n");
             continue;
         }
-        clearBuffer();
+
+        name[strcspn(name, "\n")] = '\0';
+
+        if (name[0] == '\0') {
+            printf("Ten khong duoc de trong! Moi nhap lai.\n");
+            continue;
+        }
+
+        if (isAllSpaces(name)) {
+            printf("Ten khong duoc chi la khoang trang! Moi nhap lai.\n");
+            continue;
+        }
+
+        break;
+    }
+
+    char buf[20];
+    while (1) {
+        printf("Nhap so ngay o: ");
+        if (fgets(buf, sizeof(buf), stdin) == NULL) {
+            printf("Loi nhap! Moi nhap lai.\n");
+            continue;
+        }
+
+        if (buf[0] == '\n') {
+            printf("Khong duoc de trong! Moi nhap lai.\n");
+            continue;
+        }
+
+        if (sscanf(buf, "%d", &days) != 1) {
+            printf("Nhap sai kieu du lieu! Moi nhap lai.\n");
+            continue;
+        }
 
         if (days <= 0) {
             printf("So ngay phai > 0!\n");
@@ -506,18 +553,16 @@ void checkIn() {
         return;
     }
 
-    // tao booking moi
     struct Booking bk;
 
-    sprintf(bk.bookId, "B%03d", bookingCount + 1);  // tao ma dat phong B001, B002...
-    strcpy(bk.roomId, id);                          // phong nao
-    strcpy(bk.customerName, name);                  // ten khach
-    bk.days = days;                                 // so ngay
-    bk.totalCost = rooms[index].price * days;       // tinh tien
+    sprintf(bk.bookId, "B%03d", bookingCount + 1);
+    strcpy(bk.roomId, id);
+    strcpy(bk.customerName, name);
+    bk.days = days;
+    bk.totalCost = rooms[index].price * days;
 
-    bookings[bookingCount++] = bk;                  // luu vao mang booking
+    bookings[bookingCount++] = bk;
 
-    // cap nhat trang thai phong sang "dang o"
     rooms[index].status = 1;
 
     clearScreen();
@@ -531,8 +576,6 @@ void checkIn() {
     getchar();
 }
 
-// ----------------- F08 - LICH SU THUE THEO PHONG -----------------
-
 void viewBookingHistory() {
     char id[5];
     int found = 0;
@@ -540,20 +583,38 @@ void viewBookingHistory() {
     clearScreen();
     printf("=========== LICH SU THUE PHONG ===========\n");
 
-    printf("Nhap so phong can xem lich su: ");
-    fgets(id, sizeof(id), stdin);
-    id[strcspn(id, "\n")] = '\0';
+    while (1) {
+        printf("Nhap so phong can xem lich su: ");
+        if (fgets(id, sizeof(id), stdin) == NULL) {
+            printf("Loi nhap! Moi nhap lai.\n");
+            continue;
+        }
+        id[strcspn(id, "\n")] = '\0';
+
+        if (id[0] == '\0' || isAllSpaces(id)) {
+            printf("So phong khong duoc de trong hoac chi la khoang trang! Moi nhap lai.\n");
+            continue;
+        }
+        break;
+    }
 
     clearScreen();
-    printf("=== LICH SU THUE CUA PHONG %s ===\n", id);
+    printf("=== LICH SU THUE CUA PHONG %s ===\n\n", id);
+
+    printBookingTitle();
 
     for (int i = 0; i < bookingCount; i++) {
-        if (strcmp(bookings[i].roomId, id) == 0) {       // cung phong
-            printf("Ma dat: %s\n", bookings[i].bookId);
-            printf("Khach: %s\n", bookings[i].customerName);
-            printf("So ngay: %d\n", bookings[i].days);
-            printf("Tong tien: %.2lf\n", bookings[i].totalCost);
-            printf("------------------------------\n");
+        if (strcmp(bookings[i].roomId, id) == 0) {
+            char daysStr[10], costStr[20];
+
+            sprintf(daysStr, "%d", bookings[i].days);
+            sprintf(costStr, "%.2lf", bookings[i].totalCost);
+
+            printCenter(bookings[i].bookId, 10);       printf("|");
+            printCenter(bookings[i].customerName, 25); printf("|");
+            printCenter(daysStr, 10);                  printf("|");
+            printCenter(costStr, 15);                  printf("\n");
+
             found = 1;
         }
     }
@@ -566,19 +627,17 @@ void viewBookingHistory() {
     getchar();
 }
 
-// ----------------- HAM MAIN -----------------
-
 int main() {
     int choice;
 
     do {
-        displayMenu();                             // in menu
-        if (scanf("%d", &choice) != 1) {           // nhap lua chon
+        displayMenu();
+        if (scanf("%d", &choice) != 1) {
             clearBuffer();
             printf("Nhap sai kieu du lieu!\n");
             continue;
         }
-        clearBuffer();                             // xoa '\n'
+        clearBuffer();
 
         switch (choice) {
             case 1:
