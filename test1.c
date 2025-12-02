@@ -90,6 +90,8 @@ void displayMenu() {
     printf("NHAP LUA CHON (1-9): ");
 }
 
+// ====================== F01 - THEM PHONG MOI ======================
+
 void addRoom() {
     struct Room newRoom;
 
@@ -173,6 +175,8 @@ void addRoom() {
     clearScreen();
     printf("Them phong thanh cong!\n");
 }
+
+// ====================== F02 - CAP NHAT PHONG ======================
 
 void updateRoom() {
     char id[5];
@@ -263,6 +267,8 @@ void updateRoom() {
     printf("Cap nhat phong %s thanh cong!\n", id);
 }
 
+// ====================== F03 - BAO TRI PHONG (KHOA) ======================
+
 int maintenanceRoom() {
     char id[5];
 
@@ -311,6 +317,8 @@ int maintenanceRoom() {
     printf("Phong %s da duoc dua vao trang thai BAO TRI!\n", id);
     return 1;
 }
+
+// ====================== F04 - HIEN THI DANH SACH PHONG ======================
 
 void displayRooms() {
     int perPage = 5;
@@ -371,6 +379,8 @@ void displayRooms() {
     }
 }
 
+// ====================== F05 - TIM PHONG TRONG THEO LOAI ======================
+
 void searchEmptyRoomsByType() {
     int type;
 
@@ -426,6 +436,8 @@ void searchEmptyRoomsByType() {
     getchar();
 }
 
+// ====================== F06 - SAP XEP PHONG THEO GIA GIAM DAN ======================
+
 void sortRoomsByPriceDesc() {
     if (roomCount <= 1) {
         clearScreen();
@@ -450,6 +462,8 @@ void sortRoomsByPriceDesc() {
 
     displayRooms();
 }
+
+// ====================== F07 - CHECK-IN (NHAN PHONG) ======================
 
 void checkIn() {
     char id[5];
@@ -576,6 +590,8 @@ void checkIn() {
     getchar();
 }
 
+// ====================== F08 - LICH SU THUE THEO PHONG ======================
+
 void viewBookingHistory() {
     char id[5];
     int found = 0;
@@ -627,6 +643,8 @@ void viewBookingHistory() {
     getchar();
 }
 
+// ====================== F09 - THOAT CHUONG TRINH (MAIN MENU) ======================
+
 int main() {
     int choice;
 
@@ -640,31 +658,31 @@ int main() {
         clearBuffer();
 
         switch (choice) {
-            case 1:
+            case 1:     // F01 - Them phong moi
                 addRoom();
                 break;
-            case 2:
+            case 2:     // F02 - Cap nhat phong
                 updateRoom();
                 break;
-            case 3:
+            case 3:     // F03 - Bao tri phong
                 maintenanceRoom();
                 break;
-            case 4:
+            case 4:     // F04 - Hien thi danh sach
                 displayRooms();
                 break;
-            case 5:
+            case 5:     // F05 - Tim phong trong theo loai
                 searchEmptyRoomsByType();
                 break;
-            case 6:
+            case 6:     // F06 - Sap xep phong theo gia giam dan
                 sortRoomsByPriceDesc();
                 break;
-            case 7:
+            case 7:     // F07 - Check-in
                 checkIn();
                 break;
-            case 8:
+            case 8:     // F08 - Lich su thue
                 viewBookingHistory();
                 break;
-            case 9:
+            case 9:     // F09 - Thoat
                 clearScreen();
                 printf("Thoat chuong trinh thanh cong!\n");
                 break;
@@ -677,4 +695,3 @@ int main() {
 
     return 0;
 }
-
