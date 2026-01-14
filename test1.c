@@ -89,6 +89,14 @@ void displayMenu() {
     printf("=======================================================================\n");
     printf("NHAP LUA CHON (1-9): ");
 }
+void initSampleData() {
+    strcpy(rooms[0].roomId, "101"); rooms[0].type = 1; rooms[0].price = 300000; rooms[0].status = 0;
+    strcpy(rooms[1].roomId, "102"); rooms[1].type = 2; rooms[1].price = 500000; rooms[1].status = 1;
+    strcpy(rooms[2].roomId, "201"); rooms[2].type = 1; rooms[2].price = 350000; rooms[2].status = 2;
+    strcpy(rooms[3].roomId, "202"); rooms[3].type = 2; rooms[3].price = 550000; rooms[3].status = 0;
+    strcpy(rooms[4].roomId, "301"); rooms[4].type = 1; rooms[4].price = 300000; rooms[4].status = 0;
+    roomCount = 5;
+}
 
 // ====================== F01 - THEM PHONG MOI ======================
 
@@ -695,3 +703,4 @@ int main() {
 
     return 0;
 }
+
